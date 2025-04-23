@@ -22,6 +22,7 @@ app.use(express.json()); //parse incming JASON
 app.get('/', (req, res) => {
   res.send('Chat backend is running!');
 });
+
 // POST endpoint to create a new chatroom
 app.post('/chatrooms', (req, res) => {
     const { name, tags } = req.body;
@@ -41,8 +42,25 @@ app.post('/chatrooms', (req, res) => {
 });
 //GET all chatrooms
 app.get('/chatrooms', (req, res) => {
-    res.json(chatrooms);
+    const { name, tag } = req.query;
+  
+    let filtered = chatrooms;
+  
+    if (name) {
+      filtered = filtered.filter(room =>
+        room.name.toLowerCase().includes(name.toLowerCase())
+      );
+    }
+  
+    if (tag) {
+      filtered = filtered.filter(room =>
+        room.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+      );
+    }
+  
+    res.json(filtered);
 });
+  
 
 
 // Socket.IO connection handler

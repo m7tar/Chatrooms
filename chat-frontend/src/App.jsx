@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 const API_URL = 'http://localhost:3001';
 
 function App() {
+  const [username, setUsername] = useState('');
+  const [isReady, setIsReady] = useState(false);
+  
   const [chatrooms, setChatrooms] = useState([]);
   const [name, setName] = useState('');
   const [tags, setTags] = useState('');
@@ -37,7 +40,21 @@ function App() {
     setName('');
     setTags('');
   };
-
+  if (!isReady) {
+    return (
+      <div style={{ padding: '2rem' }}>
+        <h2>Enter your username</h2>
+        <input
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Your name"
+        />
+        <button onClick={() => setIsReady(true)} disabled={!username}>
+          Join Chat
+        </button>
+      </div>
+    );
+  } else
   return (
     <div style={{ padding: '2rem' }}>
       <h1>Chatrooms</h1>
@@ -74,6 +91,12 @@ function App() {
         {chatrooms.map(room => (
           <li key={room.id}>
             <strong>{room.name}</strong> — Tags: {room.tags.join(', ')}
+            <a
+              href={`/chat/${room.id}?user=${username}&name=${encodeURIComponent(room.name)}`}
+              style={{ marginLeft: '1rem' }}
+            >
+              Join
+            </a>
           </li>
         ))}
       </ul>

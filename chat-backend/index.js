@@ -42,19 +42,26 @@ app.post('/chatrooms', (req, res) => {
 });
 //GET all chatrooms
 app.get('/chatrooms', (req, res) => {
-    const { name, tag } = req.query;
+    const { name, tags } = req.query;
   
     let filtered = chatrooms;
   
+    // 🔍 Match partial room names (case-insensitive)
     if (name) {
+      const nameQuery = name.toLowerCase();
       filtered = filtered.filter(room =>
-        room.name.toLowerCase().includes(name.toLowerCase())
+        room.name.toLowerCase().includes(nameQuery)
       );
     }
   
-    if (tag) {
+    // 🔍 Match tags (any tag that includes the query string)
+    if (tags) {
+      const tagList = tags.toLowerCase().split(',');
+  
       filtered = filtered.filter(room =>
-        room.tags.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+        room.tags.some(tag =>
+          tagList.some(searchTag => tag.toLowerCase().includes(searchTag))
+        )
       );
     }
   

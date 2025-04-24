@@ -62,28 +62,29 @@ export default function ChatroomPage() {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Chatroom: {roomName}</h2>
-
-      <ul>
+    <div className="max-w-2xl mx-auto p-6 text-white">
+      <h2 className="text-2xl font-bold mb-4">Chatroom: {roomName}</h2>
+  
+      <ul className="space-y-2 mb-4 max-h-96 overflow-y-auto bg-gray-800 p-4 rounded-md">
         {messages.map((msg, index) => (
-          <li key={index}>
-            <strong>{msg.username}:</strong> {msg.text}
-            <small> ({new Date(msg.timestamp).toLocaleTimeString()})</small>
+          <li key={index} className="text-sm">
+            <strong className="text-blue-400">{msg.username}:</strong> {msg.text}
+            <span className="text-gray-400 ml-2 text-xs">({new Date(msg.timestamp).toLocaleTimeString()})</span>
           </li>
         ))}
       </ul>
-
-      {typingUser && <p><em>{typingUser} is typing...</em></p>}
-
-      <form onSubmit={sendMessage}>
+  
+      {typingUser && <p className="text-sm italic text-gray-400 mb-2">{typingUser} is typing...</p>}
+  
+      <form onSubmit={sendMessage} className="flex gap-2">
         <input
           value={text}
           onChange={handleTyping}
           placeholder="Type your message"
           required
+          className="flex-1 p-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400"
         />
-        <button type="submit">Send</button>
+        <button type="submit" className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700">Send</button>
       </form>
     </div>
   );

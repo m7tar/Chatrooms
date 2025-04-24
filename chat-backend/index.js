@@ -1,12 +1,17 @@
 //Importing dep
 const express = require('express');
-const http = require('http'); //: Node's built-in HTTP module; used to create the actual web server.
+const http = require('http'); //: Node's built-in HTTP module;
 const cors = require('cors'); 
 const { Server } = require('socket.io'); //: A library for real-time, bi-directional communication using WebSockets.
+const { PrismaClient } = require('@prisma/client');
+
+
 //Server & Socket.IO Setup
 const app = express(); //create express app
 const server = http.createServer(app); //create HTTP server
 const chatrooms = []; // This will hold all chatrooms temporarily
+const prisma = new PrismaClient();
+
 //this is the websocket server
 const io = new Server(server, {
   cors: {
@@ -24,48 +29,53 @@ app.get('/', (req, res) => {
 });
 
 // POST endpoint to create a new chatroom
-app.post('/chatrooms', (req, res) => {
-    const { name, tags } = req.body;
-  
-    if (!name) {
-      return res.status(400).json({ error: 'Chatroom name is required' });
-    }
-  
-    const newChatroom = {
-      id: Date.now().toString(),  // simple ID for now
-      name,
-      tags: tags || [],
-    };
-  
-    chatrooms.push(newChatroom);
+app.post('/chatrooms', async (req, res) => {
+  const { name, tags } = req.body;
+  if (!name) return res.status(400).json({ error: 'Chatroom name is required' });
+
+  try {
+    const newChatroom = await prisma.chatroom.create({
+      data: {
+        name,
+        tags: tags || [],
+      },
+    });
+
     res.status(201).json(newChatroom);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create chatroom' });
+  }
 });
+
 //GET all chatrooms
-app.get('/chatrooms', (req, res) => {
-    const { name, tags } = req.query;
-  
-    let filtered = chatrooms;
-  
-    // 🔍 Match partial room names (case-insensitive)
+app.get('/chatrooms', async (req, res) => {
+  const { name, tags } = req.query;
+
+  try {
+    const where = {};
+
     if (name) {
-      const nameQuery = name.toLowerCase();
-      filtered = filtered.filter(room =>
-        room.name.toLowerCase().includes(nameQuery)
-      );
+      where.name = {
+        contains: name,
+        mode: 'insensitive',
+      };
     }
-  
-    // 🔍 Match tags (any tag that includes the query string)
+
     if (tags) {
       const tagList = tags.toLowerCase().split(',');
-  
-      filtered = filtered.filter(room =>
-        room.tags.some(tag =>
-          tagList.some(searchTag => tag.toLowerCase().includes(searchTag))
-        )
-      );
+      where.tags = {
+        hasSome: tagList,
+      };
     }
-  
-    res.json(filtered);
+
+    const chatrooms = await prisma.chatroom.findMany({ where });
+
+    res.json(chatrooms);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch chatrooms' });
+  }
 });
   
 

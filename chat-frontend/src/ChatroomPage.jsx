@@ -62,30 +62,54 @@ export default function ChatroomPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 text-white">
-      <h2 className="text-2xl font-bold mb-4">Chatroom: {roomName}</h2>
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
+      <div className="w-full max-w-2xl">
+        <h2 className="text-3xl font-bold mb-6 text-center text-blue-400">
+          Chatroom: <span className="text-white">{roomName}</span>
+        </h2>
   
-      <ul className="space-y-2 mb-4 max-h-96 overflow-y-auto bg-gray-800 p-4 rounded-md">
-        {messages.map((msg, index) => (
-          <li key={index} className="text-sm">
-            <strong className="text-blue-400">{msg.username}:</strong> {msg.text}
-            <span className="text-gray-400 ml-2 text-xs">({new Date(msg.timestamp).toLocaleTimeString()})</span>
-          </li>
-        ))}
-      </ul>
+        <div className="bg-gray-800 rounded-lg p-4 shadow-xl mb-4 h-[28rem] overflow-y-auto border border-gray-700">
+          <ul className="space-y-1">
+            {messages.map((msg, index) => (
+              <li
+                key={index}
+                className={`p-3 rounded-md ${
+                  index % 2 === 0 ? 'bg-gray-700' : 'bg-gray-600'
+                }`}
+              >
+                <div className="text-sm">
+                  <span className="text-blue-400 font-semibold">{msg.username}:</span>{' '}
+                  {msg.text}
+                </div>
+                <div className="text-xs text-gray-400 ml-1 mt-1">
+                  {new Date(msg.timestamp).toLocaleTimeString()}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
   
-      {typingUser && <p className="text-sm italic text-gray-400 mb-2">{typingUser} is typing...</p>}
+        {typingUser && (
+          <p className="text-sm italic text-gray-400 mb-2 text-right">{typingUser} is typing...</p>
+        )}
   
-      <form onSubmit={sendMessage} className="flex gap-2">
-        <input
-          value={text}
-          onChange={handleTyping}
-          placeholder="Type your message"
-          required
-          className="flex-1 p-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400"
-        />
-        <button type="submit" className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700">Send</button>
-      </form>
+        <form onSubmit={sendMessage} className="flex gap-2">
+          <input
+            value={text}
+            onChange={handleTyping}
+            placeholder="Type your message"
+            required
+            className="flex-1 p-3 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded-md font-medium transition duration-200"
+          >
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
+  
 }

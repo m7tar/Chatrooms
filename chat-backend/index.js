@@ -101,6 +101,10 @@ io.on('connection', (socket) => {
     console.log(`User ${socket.id} joined room ${room}`);
   });
 
+  socket.on('typing', ({ room, username }) => {
+    socket.to(room).emit('user_typing', username);
+  });
+
   socket.on('send_message', async (data) => {
     try {
       const saved = await prisma.message.create({

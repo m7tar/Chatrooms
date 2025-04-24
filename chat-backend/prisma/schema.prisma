@@ -22,8 +22,10 @@ model Message {
   username   String
   text       String
   timestamp  DateTime @default(now())
+  expiresAt  DateTime
 
   chatroom   Chatroom @relation(fields: [roomId], references: [id])
 
   @@index([roomId])
 }
+

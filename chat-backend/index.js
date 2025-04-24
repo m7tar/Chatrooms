@@ -106,24 +106,26 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', async (data) => {
-    try {
-      const saved = await prisma.message.create({
-        data: {
-          roomId: data.room,
-          username: data.username,
-          text: data.text,
-          timestamp: new Date(data.timestamp || Date.now()),
-        }
-      });
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 3 * 60 * 1000); // 3 mins later
   
-      io.to(data.room).emit('receive_message', saved);
-    } catch (err) {
-      console.error('Failed to save message:', err);
-    }
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.id}`);
+    const saved = await prisma.message.create({
+      data: {
+        roomId: data.room,
+        username: data.username,
+        text: data.text,
+        timestamp: now,
+        expiresAt: expiresAt,
+      }
+    });
+  
+    io.to(data.room).emit('receive_message', saved);
+  
+    // Schedule message deletion
+    setTimeout(async () => {
+      await prisma.message.delete({ where: { id: saved.id } });
+      io.to(data.room).emit('message_deleted', saved.id); // Notify clients
+    }, 3 * 60 * 1000);
   });
 });
 

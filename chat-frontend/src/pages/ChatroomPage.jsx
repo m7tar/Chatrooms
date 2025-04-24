@@ -38,9 +38,14 @@ export default function ChatroomPage() {
       }, 2000);
     });
 
+    //remove messages after 3 min
+    socket.on('message_deleted', (id) => {
+      setMessages(prev => prev.filter(m => m.id !== id));
+    });
     return () => {
       socket.off('receive_message', handler);
       socket.off('user_typing');
+      socket.off('message_deleted');
     };
   }, [id]);
 

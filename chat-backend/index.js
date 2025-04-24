@@ -77,7 +77,19 @@ app.get('/chatrooms', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch chatrooms' });
   }
 });
-  
+
+app.get('/chatrooms/:id/messages', async (req, res) => {
+  try {
+    const messages = await prisma.message.findMany({
+      where: { roomId: req.params.id },
+      orderBy: { timestamp: 'asc' },
+    });
+    res.json(messages);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
 
 
 // Socket.IO connection handler
@@ -89,8 +101,21 @@ io.on('connection', (socket) => {
     console.log(`User ${socket.id} joined room ${room}`);
   });
 
-  socket.on('send_message', (data) => {
-    io.to(data.room).emit('receive_message', data);
+  socket.on('send_message', async (data) => {
+    try {
+      const saved = await prisma.message.create({
+        data: {
+          roomId: data.room,
+          username: data.username,
+          text: data.text,
+          timestamp: new Date(data.timestamp || Date.now()),
+        }
+      });
+  
+      io.to(data.room).emit('receive_message', saved);
+    } catch (err) {
+      console.error('Failed to save message:', err);
+    }
   });
 
   socket.on('disconnect', () => {

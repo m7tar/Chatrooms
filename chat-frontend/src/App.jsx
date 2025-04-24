@@ -17,7 +17,7 @@ function App() {
     const params = new URLSearchParams();
     if (searchName) params.append('name', searchName);
     if (searchTags) params.append('tags', searchTags);
-    console.log(params);
+    console.log(params)
   
     const res = await fetch(`${API_URL}/chatrooms?${params.toString()}`);
     const data = await res.json();

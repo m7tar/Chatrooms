@@ -13,15 +13,23 @@ export default function ChatroomPage() {
   const roomName = searchParams.get('name') || id;
 
   useEffect(() => {
+    // Join room
     socket.emit('join_room', id);
   
-    const handler = (data) => setMessages((prev) => [...prev, data]);
+    // Fetch previous messages
+    fetch(`http://localhost:3001/chatrooms/${id}/messages`)
+      .then(res => res.json())
+      .then(setMessages);
+  
+    // Listen for new messages
+    const handler = (data) => setMessages(prev => [...prev, data]);
     socket.on('receive_message', handler);
   
     return () => {
-      socket.off('receive_message', handler); // clean up listener
+      socket.off('receive_message', handler);
     };
   }, [id]);
+  
   
 
   const sendMessage = (e) => {

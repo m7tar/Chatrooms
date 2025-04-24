@@ -12,4 +12,18 @@ model Chatroom {
   name      String
   tags      String[]
   createdAt DateTime @default(now())
+
+  messages  Message[]
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  roomId     String
+  username   String
+  text       String
+  timestamp  DateTime @default(now())
+
+  chatroom   Chatroom @relation(fields: [roomId], references: [id])
+
+  @@index([roomId])
 }

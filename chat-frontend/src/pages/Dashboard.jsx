@@ -41,7 +41,6 @@ function Dashboard({ username }) {
   };
     return (
       <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center p-6">
-        (
           <div className="w-full max-w-3xl space-y-8">
             <h1 className="text-4xl font-bold text-center text-blue-400">Chatrooms</h1>
     

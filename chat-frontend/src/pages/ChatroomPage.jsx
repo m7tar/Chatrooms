@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
@@ -9,11 +9,12 @@ export default function ChatroomPage() {
   const [searchParams] = useSearchParams();
   const username = searchParams.get('user') || 'anon';
   const roomName = searchParams.get('name') || id;
+  let typingTimeout = null;
+  const bottomRef = useRef(null);
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [typingUser, setTypingUser] = useState(null);
-  let typingTimeout = null;
 
   useEffect(() => {
     // Join room
@@ -27,6 +28,7 @@ export default function ChatroomPage() {
     // Listen for new messages
     const handler = (data) => setMessages(prev => [...prev, data]);
     socket.on('receive_message', handler);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
 
     // Listen for typing events
     socket.on('user_typing', (username) => {
@@ -47,7 +49,7 @@ export default function ChatroomPage() {
       socket.off('user_typing');
       socket.off('message_deleted');
     };
-  }, [id]);
+  }, [id] [messages]);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -91,6 +93,7 @@ export default function ChatroomPage() {
                 </div>
               </li>
             ))}
+            <div ref={bottomRef} />
           </ul>
         </div>
   

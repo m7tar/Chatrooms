@@ -24,8 +24,19 @@ model Message {
   timestamp  DateTime @default(now())
   expiresAt  DateTime
 
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
   chatroom   Chatroom @relation(fields: [roomId], references: [id])
 
   @@index([roomId])
 }
 
+model User {
+  id       String   @id @default(cuid())
+  username String   @unique
+  password String   // hashed password
+  messages Message[]
+
+  createdAt DateTime @default(now())
+}

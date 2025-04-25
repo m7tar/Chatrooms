@@ -12,6 +12,11 @@ const server = http.createServer(app); //create HTTP server
 const chatrooms = []; // This will hold all chatrooms temporarily
 const prisma = new PrismaClient();
 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const SECRET = process.env.JWT_SECRET || 'super-secret-key';
+
+
 //this is the websocket server
 const io = new Server(server, {
   cors: {
@@ -27,7 +32,46 @@ app.use(express.json()); //parse incming JASON
 app.get('/', (req, res) => {
   res.send('Chat backend is running!');
 });
+//register a new user
+app.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        username,
+        password: hashed
+      }
+    });
+
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (err) {
+    console.error(err);
+    if (err.code === 'P2002') {
+      res.status(409).json({ error: 'Username already taken' });
+    } else {
+      res.status(500).json({ error: 'Failed to create user' });
+    }
+  }
+});
+//User login
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+
+  const user = await prisma.user.findUnique({ where: { username } });
+  if (!user) return res.status(401).json({ error: 'Invalid User' });
+
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(401).json({ error: 'Invalid Password' });
+
+  const token = jwt.sign({ userId: user.id, username: user.username }, SECRET, { expiresIn: '2h' });
+
+  res.json({ token, username: user.username });
+});
 // POST endpoint to create a new chatroom
 app.post('/chatrooms', async (req, res) => {
   const { name, tags } = req.body;
